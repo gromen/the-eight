@@ -177,6 +177,9 @@
                         {{- item.product.title -}}
                       </a>
                     </p>
+                    {% if item.product.metafields.custom.preorder_enabled %}
+                      <span class="cart-items__preorder-badge">Przedsprzedaż</span>
+                    {% endif %}
                     {% if item.product.vendor and block_settings.vendor %}
                       <p>
                         {{ item.product.vendor }}
@@ -552,6 +555,19 @@
     text-transform: var(--product-title-case);
     display: block;
     margin-block-start: calc((var(--font-size--md) - 1lh) / 2);
+  }
+
+  .cart-items__preorder-badge {
+    display: inline-block;
+    font-size: var(--font-size--xs);
+    line-height: 1;
+    padding: 0.2em 0.5em;
+    border: 1px solid currentColor;
+    border-radius: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-foreground);
+    margin-block-start: var(--margin-3xs);
   }
 
   .cart-items__variants {
