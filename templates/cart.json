@@ -6,11 +6,21 @@
  * or related systems. Please exercise caution as any changes
  * made to this file may be overwritten.
  * ------------------------------------------------------------
- */{
+ */
+{
   "sections": {
     "cart-section": {
       "type": "main-cart",
       "blocks": {
+        "pickup_points_pro_map_cart_widget_wmWUDF": {
+          "type": "shopify://apps/pickup-points-pro/blocks/map_cart_widget/005581db-53ad-477a-b330-60f483c76b50",
+          "settings": {
+            "country_selector_text": "Wybierz kraj:",
+            "opening_button_text": "Wybierz punkt",
+            "additional_info_text": "Jeśli chcesz wybrać inną metodę dostawy niż punkt odbioru, pomiń ten krok i wybierz preferowaną opcję w checkout.",
+            "widget_background": "#FAFAFA"
+          }
+        },
         "cart-page-title": {
           "type": "_cart-title",
           "static": true,
@@ -56,6 +66,9 @@
           "blocks": {}
         }
       },
+      "block_order": [
+        "pickup_points_pro_map_cart_widget_wmWUDF"
+      ],
       "settings": {
         "section_width": "page-width",
         "color_scheme": "",
