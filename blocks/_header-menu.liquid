@@ -1,4 +1,3 @@
-
 {%- doc -%}
   Renders a header menu block.
 
@@ -183,7 +182,7 @@
 
 {% style %}
   .header__underlay {
-    --color-submenu: rgb({{ block_settings.color_scheme.settings.background.rgba }});
+    --color-submenu: rgb({{block_settings.color_scheme.settings.background.rgba}});
   }
 {% endstyle %}
 {% stylesheet %}
@@ -295,6 +294,13 @@
     @media screen and (min-width: 750px) {
       font-size: var(--menu-top-level-font-size-desktop);
     }
+  }
+
+  .menu-list__link--active {
+    text-decoration: underline;
+    text-underline-offset: 8px;
+    text-decoration-thickness: 2px;
+    font-weight: 500;
   }
 
   .menu-list__link-title {
