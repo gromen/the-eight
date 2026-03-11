@@ -1,7 +1,7 @@
 
 
 {% capture cart_page_more_blocks_content %}
-  <div class="cart-page__more-blocks">
+  <div class="cart-page__more-blocks" data-skip-subtree-update data-skip-node-update>
     {%- content_for 'blocks' -%}
   </div>
 {% endcapture %}
@@ -58,11 +58,6 @@
   </div>
   {% # theme-check-enable UniqueStaticBlockId %}
 </cart-items-component>
-
-<script
-  type="module"
-  src="{{ 'inpost-widget-fix.js' | asset_url }}"
-></script>
 
 {% stylesheet %}
   .cart-page {
