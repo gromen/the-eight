@@ -295,6 +295,7 @@
         "text_FUG7UL",
         "button_8gz8Wh"
       ],
+      "disabled": true,
       "name": "t:names.pull_quote",
       "settings": {
         "content_direction": "column",
