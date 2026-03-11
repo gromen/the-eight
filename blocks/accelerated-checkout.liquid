@@ -1,5 +1,3 @@
-
-
 {%- doc -%}
   This block is used to display the accelerated checkout button.
   Intended for product-form.liquid block.
@@ -59,6 +57,11 @@
 
   .shopify-payment-button__more-options[aria-hidden='true'] {
     display: none;
+  }
+
+  /* Hide Shop Pay and other accelerated checkout buttons */
+  .shopify-payment-button {
+    display: none !important;
   }
 {% endstylesheet %}
 
