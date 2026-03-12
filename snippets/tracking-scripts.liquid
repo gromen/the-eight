@@ -1,0 +1,57 @@
+{% comment %}
+  Tracking Scripts Manager
+
+  Centralizes all third-party tracking and analytics scripts.
+  Snippets are loaded in appropriate locations (head/body) via theme.liquid.
+
+  Usage:
+    {% render 'tracking-scripts', location: 'head' %}
+    {% render 'tracking-scripts', location: 'body' %}
+
+  Parameters:
+    - location {String} Required - 'head' or 'body'
+{% endcomment %}
+
+{%- liquid
+  assign gtm_id = 'GTM-NN78D2QH'
+  assign location = location | default: 'head'
+
+  # Only load tracking on production (not on localhost or Shopify development stores)
+  assign is_localhost = false
+  if request.host contains 'localhost' or request.host contains '127.0.0.1'
+    assign is_localhost = true
+  endif
+
+  assign load_tracking = true
+  if is_localhost
+    assign load_tracking = false
+  endif
+-%}
+
+{%- if location == 'head' and load_tracking -%}
+  {%- comment -%} Google Tag Manager - Head Script {%- endcomment -%}
+  {%- if gtm_id != blank -%}
+    <script>
+      (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+      'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+      })(window,document,'script','dataLayer','{{ gtm_id }}');
+    </script>
+  {%- endif -%}
+
+{%- elsif location == 'body' and load_tracking -%}
+  {%- comment -%} Google Tag Manager - Body Noscript {%- endcomment -%}
+  {%- if gtm_id != blank -%}
+    <noscript>
+      <iframe
+        src="https://www.googletagmanager.com/ns.html?id={{ gtm_id }}"
+        height="0"
+        width="0"
+        style="display:none;visibility:hidden"
+        title="Google Tag Manager"
+      ></iframe>
+    </noscript>
+  {%- endif -%}
+
+{%- endif -%}
