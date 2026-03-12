@@ -40,7 +40,7 @@
     </script>
   {%- endif -%}
 
-{%- elsif location == 'body' -%}
+{%- elsif location == 'body' and load_tracking -%}
   {%- comment -%} Google Tag Manager - Body Noscript {%- endcomment -%}
   {%- if gtm_id != blank -%}
     <noscript>
