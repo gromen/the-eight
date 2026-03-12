@@ -9,6 +9,10 @@
 window.dataLayer = window.dataLayer || [];
 
 class GTMEcommerceTracker extends HTMLElement {
+  #lastTrackedVariantId = null;
+  #lastTrackedTimestamp = 0;
+  #DEBOUNCE_MS = 1000; // Don't track same variant twice within 1 second
+
   connectedCallback() {
     // Only run on production (not localhost)
     if (this.#isLocalhost()) {
@@ -29,12 +33,12 @@ class GTMEcommerceTracker extends HTMLElement {
   }
 
   disconnectedCallback() {
-    document.removeEventListener('theme:cart:update', this.#handleCartUpdate);
+    // Cleanup if needed
   }
 
   #attachEventListeners() {
-    // Listen to theme's CartAddEvent (dispatched from product-form.js)
-    document.addEventListener('theme:cart:update', this.#handleCartUpdate.bind(this));
+    // Listen for add-to-cart button clicks
+    this.#attachAddToCartButtonListeners();
 
     // Listen for checkout button clicks
     const checkoutButtons = document.querySelectorAll('[name="checkout"]');
@@ -44,47 +48,90 @@ class GTMEcommerceTracker extends HTMLElement {
   }
 
   /**
-   * Handle cart update event (theme:cart:update)
-   * @param {CustomEvent} event
+   * Attach listeners to all add-to-cart buttons
    */
-  async #handleCartUpdate(event) {
-    const { detail } = event;
+  #attachAddToCartButtonListeners() {
+    // Find all add-to-cart buttons (including pre-order buttons)
+    const addToCartButtons = document.querySelectorAll('button[name="add"]');
 
-    // Skip if cart operation failed
-    if (detail?.data?.didError) return;
+    addToCartButtons.forEach(button => {
+      button.addEventListener('click', this.#handleAddToCartButtonClick.bind(this));
+    });
 
-    // For add to cart events, fetch the added item details
-    try {
-      const response = await fetch('/cart.js');
-      if (!response.ok) return;
+    // Use MutationObserver to catch dynamically added buttons
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (node instanceof HTMLElement) {
+            const buttons = node.querySelectorAll('button[name="add"]');
+            buttons.forEach(btn => {
+              btn.addEventListener('click', this.#handleAddToCartButtonClick.bind(this));
+            });
+          }
+        });
+      });
+    });
 
-      const cart = await response.json();
-      const sourceId = detail?.sourceId;
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
 
-      // Find the item that was just added (match by variant ID)
-      const addedItem = cart.items.find(/** @param {any} item */ (item) => item.variant_id?.toString() === sourceId);
+  /**
+   * Handle add-to-cart button click
+   * @param {MouseEvent} event
+   */
+  async #handleAddToCartButtonClick(event) {
+    const button = /** @type {HTMLButtonElement} */ (event.currentTarget);
+    if (!button) return;
 
-      if (!addedItem) return;
+    // Skip if button is disabled
+    if (button.disabled) return;
 
-      const dataLayerEvent = {
-        event: 'add_to_cart',
-        ecommerce: {
-          currency: cart.currency,
-          value: (addedItem.final_price / 100).toFixed(2),
-          items: [{
-            item_id: addedItem.sku || addedItem.variant_id,
-            item_name: addedItem.product_title,
-            item_variant: addedItem.variant_title,
-            price: (addedItem.final_price / 100).toFixed(2),
-            quantity: detail?.data?.itemCount || addedItem.quantity
-          }]
+    // Find the product form
+    const form = button.closest('form[action*="/cart/add"]');
+    if (!form) return;
+
+    // Get variant ID from form
+    const variantInput = /** @type {HTMLInputElement | null} */ (form.querySelector('input[name="id"]'));
+    if (!variantInput) return;
+
+    const variantId = variantInput.value;
+
+    // Wait a bit for the cart to update, then fetch cart data
+    setTimeout(async () => {
+      try {
+        const response = await fetch('/cart.js');
+        if (!response.ok) return;
+
+        const cart = await response.json();
+
+        // Find the added item
+        const addedItem = cart.items.find(/** @param {any} item */ (item) => item.variant_id?.toString() === variantId);
+
+        if (!addedItem) {
+          console.warn('[GTM] Could not find item in cart after button click. Variant ID:', variantId);
+          return;
         }
-      };
 
-      this.#pushToDataLayer(dataLayerEvent);
-    } catch (error) {
-      console.error('GTM add_to_cart error:', error);
-    }
+        const dataLayerEvent = {
+          event: 'add_to_cart',
+          ecommerce: {
+            currency: cart.currency,
+            value: (addedItem.final_price / 100).toFixed(2),
+            items: [{
+              item_id: addedItem.sku || addedItem.variant_id,
+              item_name: addedItem.product_title,
+              item_variant: addedItem.variant_title,
+              price: (addedItem.final_price / 100).toFixed(2),
+              quantity: addedItem.quantity
+            }]
+          }
+        };
+
+        this.#pushToDataLayer(dataLayerEvent);
+      } catch (error) {
+        console.error('[GTM] Error tracking add to cart button click:', error);
+      }
+    }, 500); // Wait 500ms for cart API to update
   }
 
   /**
@@ -129,9 +176,25 @@ class GTMEcommerceTracker extends HTMLElement {
 
   /**
    * Push event to dataLayer
-   * @param {object} event
+   * @param {any} event
    */
   #pushToDataLayer(event) {
+    // Deduplicate add_to_cart events
+    if (event.event === 'add_to_cart') {
+      const variantId = event.ecommerce?.items?.[0]?.item_id;
+      const now = Date.now();
+
+      // Skip if same variant was tracked within debounce window
+      if (variantId && variantId === this.#lastTrackedVariantId && (now - this.#lastTrackedTimestamp) < this.#DEBOUNCE_MS) {
+        console.log('[GTM] Skipping duplicate add_to_cart event for variant:', variantId);
+        return;
+      }
+
+      // Update tracking state
+      this.#lastTrackedVariantId = variantId;
+      this.#lastTrackedTimestamp = now;
+    }
+
     window.dataLayer.push({ ecommerce: null }); // Clear previous ecommerce data
     window.dataLayer.push(event);
 
