@@ -7,7 +7,22 @@
 
 class GTMEcommerceTracker extends HTMLElement {
   connectedCallback() {
+    // Only run on production (not localhost)
+    if (this.#isLocalhost()) {
+      console.log('[GTM] Tracking disabled on localhost');
+      return;
+    }
+
     this.#attachEventListeners();
+  }
+
+  /**
+   * Check if running on localhost
+   * @returns {boolean}
+   */
+  #isLocalhost() {
+    const hostname = window.location.hostname;
+    return hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('192.168.');
   }
 
   disconnectedCallback() {
