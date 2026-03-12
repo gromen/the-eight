@@ -2,6 +2,9 @@
   {{ closest.product | structured_data }}
 </script>
 
+{%- comment -%} GTM DataLayer - Product View {%- endcomment -%}
+{%- render 'gtm-datalayer', event: 'view_item', product: closest.product -%}
+
 {% capture media_gallery %}
   {%- content_for 'block',
     type: '_product-media-gallery',

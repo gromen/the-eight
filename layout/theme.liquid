@@ -35,10 +35,18 @@
       {%- render 'theme-editor' -%}
     {% endif %}
 
+    {%- render 'tracking-scripts', location: 'head' -%}
+
     {{ content_for_header }}
   </head>
 
   <body class="page-width-{{ settings.page_width }} card-hover-effect-{{ settings.card_hover_effect }}">
+    {%- render 'tracking-scripts', location: 'body' -%}
+
+    {%- comment -%} GTM E-commerce Event Tracker {%- endcomment -%}
+    <script src="{{ 'gtm-ecommerce-tracker.js' | asset_url }}" defer></script>
+    <gtm-ecommerce-tracker></gtm-ecommerce-tracker>
+
     {% render 'skip-to-content-link', href: '#MainContent', text: 'accessibility.skip_to_text' %}
     <div id="header-group">
       {% sections 'header-group' %}

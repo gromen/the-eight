@@ -6,6 +6,9 @@
   fetchpriority="low"
 ></script>
 
+{%- comment -%} GTM DataLayer - Collection View {%- endcomment -%}
+{%- render 'gtm-datalayer', event: 'view_item_list', collection: collection -%}
+
 {% javascript %}
   const url = new URL(window.location.href);
   if (url.hash) {
