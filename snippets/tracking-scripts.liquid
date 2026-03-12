@@ -15,9 +15,20 @@
 {%- liquid
   assign gtm_id = 'GTM-NN78D2QH'
   assign location = location | default: 'head'
+
+  # Only load tracking on production (not on localhost or Shopify development stores)
+  assign is_localhost = false
+  if request.host contains 'localhost' or request.host contains '127.0.0.1'
+    assign is_localhost = true
+  endif
+
+  assign load_tracking = true
+  if is_localhost
+    assign load_tracking = false
+  endif
 -%}
 
-{%- if location == 'head' -%}
+{%- if location == 'head' and load_tracking -%}
   {%- comment -%} Google Tag Manager - Head Script {%- endcomment -%}
   {%- if gtm_id != blank -%}
     <script>
