@@ -5,6 +5,9 @@
  * Handles: add_to_cart, remove_from_cart, begin_checkout
  */
 
+// @ts-ignore - GTM adds dataLayer to window
+window.dataLayer = window.dataLayer || [];
+
 class GTMEcommerceTracker extends HTMLElement {
   connectedCallback() {
     // Only run on production (not localhost)
@@ -26,13 +29,12 @@ class GTMEcommerceTracker extends HTMLElement {
   }
 
   disconnectedCallback() {
-    document.removeEventListener('cart:item-added', this.#handleAddToCart);
-    document.removeEventListener('cart:item-removed', this.#handleRemoveFromCart);
+    document.removeEventListener('theme:cart:update', this.#handleCartUpdate);
   }
 
   #attachEventListeners() {
-    document.addEventListener('cart:item-added', this.#handleAddToCart.bind(this));
-    document.addEventListener('cart:item-removed', this.#handleRemoveFromCart.bind(this));
+    // Listen to theme's CartAddEvent (dispatched from product-form.js)
+    document.addEventListener('theme:cart:update', this.#handleCartUpdate.bind(this));
 
     // Listen for checkout button clicks
     const checkoutButtons = document.querySelectorAll('[name="checkout"]');
@@ -42,53 +44,47 @@ class GTMEcommerceTracker extends HTMLElement {
   }
 
   /**
-   * Handle add_to_cart event
+   * Handle cart update event (theme:cart:update)
    * @param {CustomEvent} event
    */
-  #handleAddToCart(event) {
-    const { items } = event.detail;
-    if (!items || items.length === 0) return;
+  async #handleCartUpdate(event) {
+    const { detail } = event;
 
-    const item = items[0];
-    const dataLayerEvent = {
-      event: 'add_to_cart',
-      ecommerce: {
-        currency: item.price_data?.currency || 'PLN',
-        value: this.#formatPrice(item.final_price),
-        items: [{
-          item_id: item.sku || item.variant_id,
-          item_name: item.product_title,
-          item_variant: item.variant_title,
-          price: this.#formatPrice(item.final_price),
-          quantity: item.quantity
-        }]
-      }
-    };
+    // Skip if cart operation failed
+    if (detail?.data?.didError) return;
 
-    this.#pushToDataLayer(dataLayerEvent);
-  }
+    // For add to cart events, fetch the added item details
+    try {
+      const response = await fetch('/cart.js');
+      if (!response.ok) return;
 
-  /**
-   * Handle remove_from_cart event
-   * @param {CustomEvent} event
-   */
-  #handleRemoveFromCart(event) {
-    const { item } = event.detail;
-    if (!item) return;
+      const cart = await response.json();
+      const sourceId = detail?.sourceId;
 
-    const dataLayerEvent = {
-      event: 'remove_from_cart',
-      ecommerce: {
-        currency: 'PLN',
-        items: [{
-          item_id: item.sku || item.variant_id,
-          item_name: item.product_title,
-          quantity: item.quantity
-        }]
-      }
-    };
+      // Find the item that was just added (match by variant ID)
+      const addedItem = cart.items.find(/** @param {any} item */ (item) => item.variant_id?.toString() === sourceId);
 
-    this.#pushToDataLayer(dataLayerEvent);
+      if (!addedItem) return;
+
+      const dataLayerEvent = {
+        event: 'add_to_cart',
+        ecommerce: {
+          currency: cart.currency,
+          value: (addedItem.final_price / 100).toFixed(2),
+          items: [{
+            item_id: addedItem.sku || addedItem.variant_id,
+            item_name: addedItem.product_title,
+            item_variant: addedItem.variant_title,
+            price: (addedItem.final_price / 100).toFixed(2),
+            quantity: detail?.data?.itemCount || addedItem.quantity
+          }]
+        }
+      };
+
+      this.#pushToDataLayer(dataLayerEvent);
+    } catch (error) {
+      console.error('GTM add_to_cart error:', error);
+    }
   }
 
   /**
@@ -124,8 +120,8 @@ class GTMEcommerceTracker extends HTMLElement {
 
   /**
    * Format price from cents to currency
-   * @param {Number} priceInCents
-   * @returns {Number}
+   * @param {number} priceInCents
+   * @returns {string}
    */
   #formatPrice(priceInCents) {
     return (priceInCents / 100).toFixed(2);
@@ -133,10 +129,9 @@ class GTMEcommerceTracker extends HTMLElement {
 
   /**
    * Push event to dataLayer
-   * @param {Object} event
+   * @param {object} event
    */
   #pushToDataLayer(event) {
-    window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({ ecommerce: null }); // Clear previous ecommerce data
     window.dataLayer.push(event);
 
