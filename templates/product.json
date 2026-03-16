@@ -277,11 +277,11 @@
           "type": "text",
           "name": "t:names.heading",
           "settings": {
-            "text": "<h2>Niektóre chwile w sporcie zostają z nami na zawsze.</h2>",
+            "text": "<h3>Niektóre chwile w sporcie zostają z nami na zawsze.</h3>",
             "width": "fit-content",
             "max_width": "normal",
             "alignment": "left",
-            "type_preset": "rte",
+            "type_preset": "paragraph",
             "font": "var(--font-body--family)",
             "font_size": "1rem",
             "line_height": "normal",
