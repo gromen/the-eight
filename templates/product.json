@@ -303,7 +303,7 @@
           "type": "text",
           "name": "t:names.text",
           "settings": {
-            "text": "<h4><em>The Eight powstało, by móc do nich wracać.</em></h4>",
+            "text": "<h3><em>The Eight powstało, by móc do nich wracać.</em></h3>",
             "width": "fit-content",
             "max_width": "normal",
             "alignment": "left",
