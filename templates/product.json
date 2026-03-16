@@ -303,7 +303,7 @@
           "type": "text",
           "name": "t:names.text",
           "settings": {
-            "text": "<p>Tworzymy rzeczy, które działają lepiej i służą dłużej. Nasze produkty rozwiązują realne problemy dzięki prostemu wzornictwu i uczciwym materiałom.</p>",
+            "text": "<p>The Eight powstało, by móc do nich wracać.</p>",
             "width": "fit-content",
             "max_width": "normal",
             "alignment": "left",
