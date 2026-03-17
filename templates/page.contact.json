@@ -119,7 +119,7 @@
           "type": "text",
           "name": "t:names.text",
           "settings": {
-            "text": "<p><strong>THE EIGHT</strong> Bartłomiej Dmoch<br/>kontakt@theeight.pl<br/>ul. Złota 75A lok. 7, 00-819 Warszawa</p><p>E-mail: <a href=\"mailto:kontakt@theeight.pl\" title=\"kontakt@theeight.pl\">kontakt@theeight.pl</a></p><p>Telefon: <a href=\"tel:+48734185777\">734 185 777</a></p><p>NIP: 8371753904</p>",
+            "text": "<p><strong>THE EIGHT</strong> Bartłomiej Dmoch<br/>ul. Złota 75A lok. 7, 00-819 Warszawa</p><p>E-mail: <a href=\"mailto:kontakt@theeight.pl\" title=\"kontakt@theeight.pl\">kontakt@theeight.pl</a></p><p>Telefon: <a href=\"tel:+48734185777\">734 185 777</a></p><p>NIP: 8371753904</p>",
             "width": "fit-content",
             "max_width": "normal",
             "alignment": "left",
