@@ -80,6 +80,17 @@
     "variant_button_radius": 14,
     "variant_button_width": "equal-width-buttons",
     "content_for_index": [],
+    "blocks": {
+      "2002083779152374139": {
+        "type": "shopify://apps/pickup-points-pro/blocks/app_embed/005581db-53ad-477a-b330-60f483c76b50",
+        "disabled": false,
+        "settings": {
+          "country_selector_text": "Select your shipping country:",
+          "opening_button_text": "Choose pickup point on map",
+          "additional_info_text": "If you want to choose a different delivery method than the pickup point, please skip this step and select your preferred option at the checkout."
+        }
+      }
+    },
     "color_schemes": {
       "scheme-1": {
         "settings": {
