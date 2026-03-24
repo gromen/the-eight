@@ -1,4 +1,3 @@
-
 {% liquid
   assign block_settings = block.settings
   assign product = closest.product
@@ -43,6 +42,7 @@
     assign preorder_shipping_date = product.metafields.custom.preorder_shipping_date
     assign now_timestamp = 'now' | date: '%s' | plus: 0
     assign end_timestamp = preorder_end_date | date: '%s' | plus: 0
+    assign display_end_timestamp = end_timestamp | minus: 60
     assign end_timestamp_ms = end_timestamp | times: 1000
     if now_timestamp > end_timestamp
       assign preorder_ended = true
@@ -243,21 +243,22 @@
           %}
 
           {% if is_preorder and preorder_ended == false %}
-            <div class="preorder-info"
+            <div
+              class="preorder-info"
               data-preorder-end-ms="{{ end_timestamp_ms }}"
               role="status"
               aria-live="polite"
             >
-              <p>Przedsprzedaż do: {{ preorder_end_date | date: "%d.%m.%Y, %H:%M" }}</p>
+              <p>Przedsprzedaż do: {{ display_end_timestamp | date: '%d.%m.%Y, %H:%M' }}</p>
               {% if preorder_shipping_date %}
-                <p>Planowana wysyłka: {{ preorder_shipping_date | date: "%d.%m.%Y" }}</p>
+                <p>Planowana wysyłka: {{ preorder_shipping_date | date: '%d.%m.%Y' }}</p>
               {% endif %}
             </div>
           {% elsif is_preorder and preorder_ended %}
             <div class="preorder-info preorder-info--ended" role="status">
               <p>Przedsprzedaż zakończona</p>
               {% if preorder_shipping_date %}
-                <p>Planowana wysyłka: {{ preorder_shipping_date | date: "%d.%m.%Y" }}</p>
+                <p>Planowana wysyłka: {{ preorder_shipping_date | date: '%d.%m.%Y' }}</p>
               {% endif %}
             </div>
           {% endif %}
@@ -287,7 +288,7 @@
 
 {% if is_preorder and preorder_ended == false and preorder_end_date %}
   <script>
-    (function() {
+    (function () {
       const preorderInfo = document.querySelector('.preorder-info[data-preorder-end-ms]');
       if (!preorderInfo) return;
 
