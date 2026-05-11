@@ -1,5 +1,3 @@
-
-
 {% assign product = closest.product %}
 
 {% capture children %}
@@ -11,14 +9,28 @@
         --badge-font-family: var(--font-{{ settings.badge_font_family }}--family); --badge-font-weight: var(--font-{{ settings.badge_font_family }}--weight); --badge-text-transform: {{ settings.badge_text_transform }};
       "
     >
-      {%- if product.available == false or product.compare_at_price > product.price -%}
+      {%- liquid
+        assign preorder_ended_badge = false
+        if product.metafields.custom.preorder_enabled == false
+          assign preorder_ended_badge = true
+        elsif product.metafields.custom.preorder_end_date != blank
+          assign now_ts = 'now' | date: '%s' | plus: 0
+          assign end_ts = product.metafields.custom.preorder_end_date | date: '%s' | plus: 0
+          if now_ts > end_ts
+            assign preorder_ended_badge = true
+          endif
+        endif
+      -%}
+      {%- if preorder_ended_badge or product.available == false or product.compare_at_price > product.price -%}
         <div
           class="
             product-badges__badge product-badges__badge--rectangle
-            {% if product.available == false %} color-{{ settings.badge_sold_out_color_scheme }}{% elsif product.compare_at_price > product.price %} color-{{ settings.badge_sale_color_scheme }}{% endif %}
+            {% if preorder_ended_badge or product.available == false %} color-{{ settings.badge_sold_out_color_scheme }}{% elsif product.compare_at_price > product.price %} color-{{ settings.badge_sale_color_scheme }}{% endif %}
           "
         >
-          {%- if product.available == false -%}
+          {%- if preorder_ended_badge -%}
+            Przedsprzedaż zakończona
+          {%- elsif product.available == false -%}
             {{ 'content.product_badge_sold_out' | t }}
           {%- elsif product.compare_at_price > product.price -%}
             {{ 'content.product_badge_sale' | t }}
