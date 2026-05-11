@@ -36,7 +36,13 @@
   # Preorder logic
   assign is_preorder = false
   assign preorder_ended = false
-  if product.metafields.custom.preorder_enabled and product.metafields.custom.preorder_end_date != blank
+  if product.metafields.custom.preorder_enabled == false
+    assign is_preorder = true
+    assign preorder_ended = true
+    assign can_add_to_cart = false
+    assign add_to_cart_text = 'Przedsprzedaż zakończona'
+    assign preorder_shipping_date = product.metafields.custom.preorder_shipping_date
+  elsif product.metafields.custom.preorder_enabled and product.metafields.custom.preorder_end_date != blank
     assign is_preorder = true
     assign preorder_end_date = product.metafields.custom.preorder_end_date
     assign preorder_shipping_date = product.metafields.custom.preorder_shipping_date
@@ -256,7 +262,6 @@
             </div>
           {% elsif is_preorder and preorder_ended %}
             <div class="preorder-info preorder-info--ended" role="status">
-              <p>Przedsprzedaż zakończona</p>
               {% if preorder_shipping_date %}
                 <p>Planowana wysyłka: {{ preorder_shipping_date | date: '%d.%m.%Y' }}</p>
               {% endif %}
